@@ -16,8 +16,8 @@ iOS AUv3 plugin) but works on any signal, not guitar-specific. Same DSP core —
 ## Building
 
 ```bash
-git clone --recurse-submodules <this repo>
-cd guitar-transposer-vst3
+git clone --recurse-submodules https://github.com/norhther/transposer-vst3.git
+cd transposer-vst3
 cmake -B build -G Xcode
 cmake --build build --config Release
 ```
