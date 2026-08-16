@@ -102,8 +102,9 @@ void TransposerAudioProcessorEditor::updateAdvancedControlsEnabled() {
 
 void TransposerAudioProcessorEditor::showAboutDialog() {
     juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::NoIcon, "About Guitar Transposer",
-        "Pitch shifting powered by Signalsmith Stretch and Signalsmith Linear,\n"
-        "(c) Geraint Luff / Signalsmith Audio Ltd, MIT licensed.\n"
+        "Guitar Transposer -- plugin, parameters and UI by Norhther.\n\n"
+        "Built on the Signalsmith Stretch pitch-shifting DSP library\n"
+        "(c) Geraint Luff / Signalsmith Audio Ltd, MIT licensed:\n"
         "https://github.com/Signalsmith-Audio/signalsmith-stretch\n\n"
         "Built with JUCE.");
 }
@@ -117,6 +118,11 @@ void TransposerAudioProcessorEditor::timerCallback() {
 
 void TransposerAudioProcessorEditor::resized() {
     auto area = getLocalBounds().reduced(16);
+
+    // Top-right, alongside the Standalone window's own "Options" (audio device) button in the
+    // JUCE-provided title bar just above this editor.
+    aboutButton.setBounds(area.removeFromTop(20).removeFromRight(70));
+
     area.removeFromTop(20); // room for slider labels above the top row
 
     auto knobRow = area.removeFromTop(110);
@@ -131,7 +137,6 @@ void TransposerAudioProcessorEditor::resized() {
     formantCompensateButton.setBounds(controlsRow.removeFromLeft(180));
     controlsRow.removeFromLeft(12);
     advancedButton.setBounds(controlsRow.removeFromLeft(120));
-    aboutButton.setBounds(controlsRow.removeFromRight(70));
 
     area.removeFromTop(12);
     auto meterRow = area.removeFromTop(24);
