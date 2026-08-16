@@ -48,7 +48,12 @@ juce::AudioProcessorValueTreeState::ParameterLayout TransposerAudioProcessor::cr
 void TransposerAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock) {
     bridge = std::make_unique<SignalsmithBridge>(sampleRate, getTotalNumInputChannels());
     inputScratch.setSize(getTotalNumInputChannels(), samplesPerBlock);
-    setLatencySamples(static_cast<int>(bridge->appliedLatencySamples()));
+    lastLatencyModeIndex = static_cast<int>(apvts.getRawParameterValue(ParamID::latencyMode)->load());
+    lastAdvancedEnabled = apvts.getRawParameterValue(ParamID::advancedEnabled)->load() > 0.5f;
+    lastAdvancedBlockMs = apvts.getRawParameterValue(ParamID::advancedBlockMs)->load();
+    lastAdvancedOverlap = apvts.getRawParameterValue(ParamID::advancedOverlap)->load();
+    lastAppliedLatencySamples = static_cast<int>(bridge->appliedLatencySamples());
+    setLatencySamples(lastAppliedLatencySamples);
 }
 
 bool TransposerAudioProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const {
@@ -68,18 +73,40 @@ void TransposerAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, ju
 
     bridge->setSemitones(apvts.getRawParameterValue(ParamID::semitones)->load());
     bridge->setFormantSemitones(apvts.getRawParameterValue(ParamID::formantSemitones)->load());
-    bridge->setFormantCompensate(apvts.getRawParameterValue(ParamID::formantCompensate)->load() > 0.5f);
-    bridge->requestLatencyMode(static_cast<TransposerLatencyMode>(
-        static_cast<int>(apvts.getRawParameterValue(ParamID::latencyMode)->load())));
-    bridge->setAdvancedEnabled(apvts.getRawParameterValue(ParamID::advancedEnabled)->load() > 0.5f);
-    bridge->setAdvancedBlockMilliseconds(apvts.getRawParameterValue(ParamID::advancedBlockMs)->load());
-    bridge->setAdvancedOverlap(apvts.getRawParameterValue(ParamID::advancedOverlap)->load());
+    const bool advancedEnabled = apvts.getRawParameterValue(ParamID::advancedEnabled)->load() > 0.5f;
+    // Formant Compensate is only exposed (and editable) in Advanced mode in the UI -- match
+    // that in the DSP too, rather than silently keeping a saved-but-hidden value applied.
+    bridge->setFormantCompensate(advancedEnabled
+        && apvts.getRawParameterValue(ParamID::formantCompensate)->load() > 0.5f);
+    const int latencyModeIndex = static_cast<int>(apvts.getRawParameterValue(ParamID::latencyMode)->load());
+    if (latencyModeIndex != lastLatencyModeIndex) {
+        bridge->requestLatencyMode(static_cast<TransposerLatencyMode>(latencyModeIndex));
+        lastLatencyModeIndex = latencyModeIndex;
+    }
+    if (advancedEnabled != lastAdvancedEnabled) {
+        bridge->setAdvancedEnabled(advancedEnabled);
+        lastAdvancedEnabled = advancedEnabled;
+    }
+    const float advancedBlockMs = apvts.getRawParameterValue(ParamID::advancedBlockMs)->load();
+    if (advancedBlockMs != lastAdvancedBlockMs) {
+        bridge->setAdvancedBlockMilliseconds(advancedBlockMs);
+        lastAdvancedBlockMs = advancedBlockMs;
+    }
+    const float advancedOverlap = apvts.getRawParameterValue(ParamID::advancedOverlap)->load();
+    if (advancedOverlap != lastAdvancedOverlap) {
+        bridge->setAdvancedOverlap(advancedOverlap);
+        lastAdvancedOverlap = advancedOverlap;
+    }
     bridge->setTonalityLimit(apvts.getRawParameterValue(ParamID::tonalityLimit)->load());
 
     bridge->processInputs(inputScratch.getArrayOfReadPointers(), buffer.getArrayOfWritePointers(),
                            static_cast<uint32_t>(numSamples));
 
-    setLatencySamples(static_cast<int>(bridge->appliedLatencySamples()));
+    const int appliedLatencySamples = static_cast<int>(bridge->appliedLatencySamples());
+    if (appliedLatencySamples != lastAppliedLatencySamples) {
+        setLatencySamples(appliedLatencySamples);
+        lastAppliedLatencySamples = appliedLatencySamples;
+    }
 }
 
 juce::AudioProcessorEditor* TransposerAudioProcessor::createEditor() {

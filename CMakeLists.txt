@@ -11,13 +11,15 @@ juce_add_plugin(GuitarTransposerVST3
     COMPANY_NAME "Norhther"
     PLUGIN_MANUFACTURER_CODE Nort
     PLUGIN_CODE Gtrx
-    FORMATS VST3
+    FORMATS VST3 Standalone
     PRODUCT_NAME "Guitar Transposer"
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE
     NEEDS_MIDI_OUTPUT FALSE
     IS_MIDI_EFFECT FALSE
     EDITOR_WANTS_KEYBOARD_FOCUS FALSE
+    MICROPHONE_PERMISSION_ENABLED TRUE
+    MICROPHONE_PERMISSION_TEXT "Guitar Transposer needs mic input to transpose your guitar signal."
     VST3_CATEGORIES Fx)
 
 target_sources(GuitarTransposerVST3 PRIVATE

@@ -5,13 +5,35 @@
 
 class TransposerAudioProcessor;
 
-class TransposerAudioProcessorEditor : public juce::AudioProcessorEditor {
+class TransposerAudioProcessorEditor : public juce::AudioProcessorEditor, private juce::Timer {
 public:
     explicit TransposerAudioProcessorEditor(TransposerAudioProcessor&);
 
     void resized() override;
 
 private:
+    void timerCallback() override;
+    void updateAdvancedControlsEnabled();
+
+    // 0...1 peak level bars, driven by SignalsmithBridge::inputPeak/outputPeak via
+    // TransposerAudioProcessor::getInputPeak/getOutputPeak (30Hz poll, not audio-thread-safe
+    // beyond the atomic reads already in the bridge).
+    struct PeakMeter : public juce::Component {
+        float level = 0.0f;
+        void paint(juce::Graphics& g) override {
+            auto bounds = getLocalBounds().toFloat();
+            g.setColour(juce::Colours::darkgrey);
+            g.fillRect(bounds);
+            g.setColour(juce::Colours::limegreen);
+            g.fillRect(bounds.removeFromLeft(bounds.getWidth() * juce::jlimit(0.0f, 1.0f, level)));
+        }
+    };
+    PeakMeter inputMeter, outputMeter;
+    juce::Label inputMeterLabel, outputMeterLabel;
+
+    juce::TextButton aboutButton{"About"};
+    void showAboutDialog();
+
     TransposerAudioProcessor& processorRef;
 
     juce::Slider semitonesSlider, formantSlider, tonalitySlider, blockMsSlider, overlapSlider;

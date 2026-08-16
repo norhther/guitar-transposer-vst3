@@ -33,6 +33,9 @@ public:
 
     juce::AudioProcessorValueTreeState apvts;
 
+    float getInputPeak() const { return bridge ? bridge->inputPeak() : 0.0f; }
+    float getOutputPeak() const { return bridge ? bridge->outputPeak() : 0.0f; }
+
 private:
     juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
 
@@ -41,6 +44,19 @@ private:
     // in and out), but SignalsmithBridge::processInputs requires inputs/outputs to
     // not alias, same as the AUv3 render callback's separate buffers.
     juce::AudioBuffer<float> inputScratch;
+
+    // SignalsmithBridge::requestLatencyMode/setAdvancedEnabled/setAdvancedBlockMilliseconds/
+    // setAdvancedOverlap each bump a generation counter that forces the render thread to call
+    // stretch.configure(), which resets the STFT's internal buffers. Calling them every block
+    // (instead of only on actual changes) reconfigures -- and resets -- every callback, so the
+    // STFT never accumulates enough history to produce output: permanent silence. Only push
+    // these when the value actually changed, matching TransposerAudioUnit.swift's parameter
+    // -change-event-driven calls on the AUv3 side.
+    int lastLatencyModeIndex = -1;
+    bool lastAdvancedEnabled = false;
+    float lastAdvancedBlockMs = -1.0f;
+    float lastAdvancedOverlap = -1.0f;
+    int lastAppliedLatencySamples = -1;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TransposerAudioProcessor)
 };
