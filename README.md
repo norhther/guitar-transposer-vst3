@@ -1,7 +1,9 @@
-# Guitar Transposer (VST3)
+# Transposer (VST3)
 
-macOS VST3 port of [guitar-transposer-au](https://github.com/norhther/guitar-transposer-au)
-(an iOS AUv3 plugin). Same DSP core — [Signalsmith Stretch](https://github.com/Signalsmith-Audio/signalsmith-stretch)
+macOS VST3 real-time pitch shifter. Started as a port of
+[guitar-transposer-au](https://github.com/norhther/guitar-transposer-au) (an
+iOS AUv3 plugin) but works on any signal, not guitar-specific. Same DSP core —
+[Signalsmith Stretch](https://github.com/Signalsmith-Audio/signalsmith-stretch)
 — rewired through [JUCE](https://juce.com) instead of AVAudioUnit.
 
 ## Features

@@ -24,9 +24,9 @@ static void TransposerEnableFlushToZero() {
 /// the reference demo uses: presetDefault is block = SR*0.12, interval = SR*0.03;
 /// presetCheaper is 0.1 / 0.04. The block length sets the STFT's frequency resolution
 /// (bin spacing = SR/blockSamples), so shrinking it to chase latency destroys pitch
-/// tracking: a 16 ms block gives ~62 Hz bins, which cannot separate a low-E guitar
-/// fundamental (82 Hz) from its neighbours -> phase smearing and audible artifacts.
-/// 60 ms (~16 Hz bins) is about the floor for guitar-range material.
+/// tracking: a 16 ms block gives ~62 Hz bins, which cannot separate a low fundamental
+/// (e.g. 80-100 Hz) from its neighbours -> phase smearing and audible artifacts.
+/// 60 ms (~16 Hz bins) is about the floor for low-frequency material.
 static int TransposerBlockSamples(double sampleRate, TransposerLatencyMode mode) {
     double blockSeconds;
     switch (mode) {

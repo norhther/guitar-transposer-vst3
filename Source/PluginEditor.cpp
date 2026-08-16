@@ -101,8 +101,8 @@ void TransposerAudioProcessorEditor::updateAdvancedControlsEnabled() {
 }
 
 void TransposerAudioProcessorEditor::showAboutDialog() {
-    juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::NoIcon, "About Guitar Transposer",
-        "Guitar Transposer -- plugin, parameters and UI by Norhther.\n\n"
+    juce::AlertWindow::showMessageBoxAsync(juce::MessageBoxIconType::NoIcon, "About Transposer",
+        "Transposer -- plugin, parameters and UI by Norhther.\n\n"
         "Built on the Signalsmith Stretch pitch-shifting DSP library\n"
         "(c) Geraint Luff / Signalsmith Audio Ltd, MIT licensed:\n"
         "https://github.com/Signalsmith-Audio/signalsmith-stretch\n\n"
@@ -119,9 +119,12 @@ void TransposerAudioProcessorEditor::timerCallback() {
 void TransposerAudioProcessorEditor::resized() {
     auto area = getLocalBounds().reduced(16);
 
-    // Top-right, alongside the Standalone window's own "Options" (audio device) button in the
-    // JUCE-provided title bar just above this editor.
-    aboutButton.setBounds(area.removeFromTop(20).removeFromRight(70));
+    // Top-left, directly under the Standalone window's native-title-bar "Options" button (JUCE
+    // puts that button top-left, not top-right -- see StandaloneFilterWindow's optionsButton).
+    // Can't put a component IN that title bar: StandaloneFilterApp is declared `final` with no
+    // override hook, so this is the closest grouping without replacing JUCE's standalone entry
+    // point entirely.
+    aboutButton.setBounds(area.removeFromTop(20).removeFromLeft(70));
 
     area.removeFromTop(20); // room for slider labels above the top row
 
